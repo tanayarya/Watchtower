@@ -6,6 +6,13 @@
     { "id": "UCBJycsmduvYEL83R_U4JriQ", "name": "Marques Brownlee" }
   ],
   "redditSubreddits": ["selfhosted", "homelab"],
+  "homeAssistant": {
+    "url": "http://100.69.198.33:8123",
+    "entities": [
+      { "id": "light.light", "name": "Light", "icon": "bulb" },
+      { "id": "switch.fridge_socket_1", "name": "Fridge socket", "icon": "plug" }
+    ]
+  },
   "services": [
     { "id": "jellyfin", "name": "Jellyfin", "type": "Media server", "url": "http://100.69.198.33:8096", "healthUrl": "http://100.69.198.33:8096/health", "icon": "play", "accent": "violet" },
     { "id": "homeassistant", "name": "Home Assistant", "type": "Smart home", "url": "http://100.69.198.33:8123", "healthUrl": "http://100.69.198.33:8123", "icon": "home", "accent": "cyan" },

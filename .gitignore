@@ -1,0 +1,4 @@
+secrets/*
+!secrets/.gitkeep
+beszel_data/
+beszel_agent_data/

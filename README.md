@@ -28,6 +28,16 @@ Edit [`config/dashboard.json`](config/dashboard.json):
 
 The daily quote uses ZenQuotes’ public endpoint and falls back to a local quote if it is unavailable. Feed data is cached on the dashboard server and no feed credentials are stored in the browser.
 
+## Home Assistant controls
+
+The dashboard has a strict allowlist in `config/dashboard.json`. The starter configuration includes `light.light` and `switch.fridge_socket_1`.
+
+1. Create a dedicated long-lived Home Assistant token.
+2. On the server, create `secrets/home-assistant-token`, paste the token into it, and run `chmod 600 secrets/home-assistant-token`.
+3. Never commit that file or place the token in the JSON config. Docker mounts it as an internal secret at runtime.
+
+Only configured `light.*` and `switch.*` entities can be toggled. The browser never receives the token.
+
 ## Next live integrations
 
-The system chart intentionally uses design data until Beszel is connected. The service-status checks are live whenever Watchtower runs on the same network as the configured services. Add Home Assistant and Jellyfin tokens only through Docker secrets when their data widgets are added; never put them in the browser config.
+The system chart intentionally uses design data until Beszel is connected. The service-status checks are live whenever Watchtower runs on the same network as the configured services. Beszel has a PocketBase REST API, so its system and historical stats can be added server-side once the hub is online. Add Jellyfin tokens only through Docker secrets when data widgets are added; never put them in browser config.

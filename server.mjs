@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('.', import.meta.url));
 const publicDir = join(root, 'public');
 const configPath = join(root, 'config', 'dashboard.json');
+const homeAssistantTokenPath = process.env.HOME_ASSISTANT_TOKEN_FILE || join(root, 'secrets', 'home-assistant-token');
 const port = Number(process.env.PORT || 8099);
 const cache = new Map();
 
@@ -91,6 +92,54 @@ async function serviceHealth() {
   return { checkedAt: new Date().toISOString(), services: results };
 }
 
+async function homeAssistantRequest(path, options = {}) {
+  const config = await dashboardConfig();
+  const baseUrl = config.homeAssistant?.url;
+  if (!baseUrl) throw new Error('Home Assistant URL is not configured');
+  const token = (await readFile(homeAssistantTokenPath, 'utf8')).trim();
+  if (!token) throw new Error('Home Assistant token is empty');
+  const response = await fetch(new URL(path, baseUrl), {
+    ...options,
+    headers: {
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+      ...(options.headers ?? {})
+    },
+    signal: AbortSignal.timeout(7000)
+  });
+  if (!response.ok) throw new Error(`Home Assistant ${response.status}`);
+  return response.json();
+}
+
+async function homeAssistantEntities() {
+  const config = await dashboardConfig();
+  const entities = config.homeAssistant?.entities ?? [];
+  const results = await Promise.all(entities.map(async (entity) => {
+    const state = await homeAssistantRequest(`/api/states/${encodeURIComponent(entity.id)}`);
+    return {
+      id: entity.id,
+      name: entity.name ?? state.attributes?.friendly_name ?? entity.id,
+      icon: entity.icon ?? (entity.id.startsWith('light.') ? 'bulb' : 'plug'),
+      domain: entity.id.split('.')[0],
+      state: state.state,
+      isOn: state.state === 'on',
+      detail: state.attributes?.brightness != null ? `${Math.round((state.attributes.brightness / 255) * 100)}%` : state.state
+    };
+  }));
+  return { connected: true, entities: results };
+}
+
+async function toggleHomeAssistantEntity(entityId) {
+  const config = await dashboardConfig();
+  const entity = (config.homeAssistant?.entities ?? []).find((item) => item.id === entityId);
+  const domain = entity?.id?.split('.')[0];
+  if (!entity || !['light', 'switch'].includes(domain)) throw new Error('This entity is not allowed to be toggled');
+  await homeAssistantRequest(`/api/services/${domain}/toggle`, {
+    method: 'POST', body: JSON.stringify({ entity_id: entity.id })
+  });
+  return homeAssistantEntities();
+}
+
 function respond(res, status, body, type = 'application/json; charset=utf-8') {
   res.writeHead(status, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
   res.end(body);
@@ -102,6 +151,12 @@ createServer(async (req, res) => {
     if (url.pathname === '/api/config') return respond(res, 200, JSON.stringify(await dashboardConfig()));
     if (url.pathname === '/api/feed') return respond(res, 200, JSON.stringify(await feed()));
     if (url.pathname === '/api/health') return respond(res, 200, JSON.stringify(await serviceHealth()));
+    if (url.pathname === '/api/home-assistant' && req.method === 'GET') return respond(res, 200, JSON.stringify(await homeAssistantEntities()));
+    if (url.pathname === '/api/home-assistant/toggle' && req.method === 'POST') {
+      const entityId = url.searchParams.get('entity');
+      if (!entityId) return respond(res, 400, JSON.stringify({ error: 'Missing entity' }));
+      return respond(res, 200, JSON.stringify(await toggleHomeAssistantEntity(entityId)));
+    }
 
     const requested = url.pathname === '/' ? '/index.html' : url.pathname;
     const filePath = normalize(join(publicDir, requested));
@@ -110,7 +165,9 @@ createServer(async (req, res) => {
     await stat(filePath);
     return respond(res, 200, file, contentTypes[extname(filePath)] ?? 'application/octet-stream');
   } catch (error) {
-    const code = error.code === 'ENOENT' ? 404 : 500;
-    return respond(res, code, JSON.stringify({ error: code === 404 ? 'Not found' : 'Dashboard request failed' }));
+    const missingSecret = error.code === 'ENOENT' && url.pathname.startsWith('/api/home-assistant');
+    const code = missingSecret ? 503 : error.code === 'ENOENT' ? 404 : 500;
+    const message = missingSecret ? 'Home Assistant token is not mounted' : code === 404 ? 'Not found' : 'Dashboard request failed';
+    return respond(res, code, JSON.stringify({ error: message }));
   }
 }).listen(port, '0.0.0.0', () => console.log(`Watchtower running on http://0.0.0.0:${port}`));

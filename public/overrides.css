@@ -36,3 +36,34 @@ body {
 .area {
   fill: rgba(100, 231, 220, 0.12);
 }
+
+.svg-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.service-icon .svg-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.integration-empty {
+  grid-column: 1 / -1;
+  padding: 18px 0;
+  color: #8e949c;
+  font-size: 12px;
+}
+
+.control:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.control.is-loading .control-icon {
+  animation: control-pulse 0.75s ease-in-out infinite alternate;
+}
+
+@keyframes control-pulse {
+  to { opacity: 0.35; transform: scale(0.88); }
+}

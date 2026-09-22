@@ -9,3 +9,10 @@ services:
       - ./config/dashboard.json:/app/config/dashboard.json:ro
     environment:
       - PORT=8099
+      - HOME_ASSISTANT_TOKEN_FILE=/run/secrets/home_assistant_token
+    secrets:
+      - home_assistant_token
+
+secrets:
+  home_assistant_token:
+    file: ./secrets/home-assistant-token
