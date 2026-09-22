@@ -1,0 +1,11 @@
+services:
+  watchtower:
+    build: .
+    container_name: watchtower-dashboard
+    restart: unless-stopped
+    ports:
+      - "100.69.198.33:8099:8099"
+    volumes:
+      - ./config/dashboard.json:/app/config/dashboard.json:ro
+    environment:
+      - PORT=8099

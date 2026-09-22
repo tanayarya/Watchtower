@@ -1,0 +1,16 @@
+{
+  "serverName": "Watchtower",
+  "serverAddress": "100.69.198.33",
+  "youtubeChannels": [
+    { "id": "UCXuqSBlHAE6Xw-yeJA0Tunw", "name": "Linus Tech Tips" },
+    { "id": "UCBJycsmduvYEL83R_U4JriQ", "name": "Marques Brownlee" }
+  ],
+  "redditSubreddits": ["selfhosted", "homelab"],
+  "services": [
+    { "id": "jellyfin", "name": "Jellyfin", "type": "Media server", "url": "http://100.69.198.33:8096", "healthUrl": "http://100.69.198.33:8096/health", "icon": "play", "accent": "violet" },
+    { "id": "homeassistant", "name": "Home Assistant", "type": "Smart home", "url": "http://100.69.198.33:8123", "healthUrl": "http://100.69.198.33:8123", "icon": "home", "accent": "cyan" },
+    { "id": "uptime", "name": "Uptime Kuma", "type": "Monitoring", "url": "http://100.69.198.33:3001", "healthUrl": "http://100.69.198.33:3001", "icon": "pulse", "accent": "green" },
+    { "id": "stirling", "name": "Stirling PDF", "type": "Utilities", "url": "http://100.69.198.33:8080", "healthUrl": "http://100.69.198.33:8080", "icon": "file", "accent": "orange" },
+    { "id": "beszel", "name": "Beszel", "type": "Server metrics", "url": "http://100.69.198.33:8090", "healthUrl": "http://100.69.198.33:8090", "icon": "chart", "accent": "blue" }
+  ]
+}

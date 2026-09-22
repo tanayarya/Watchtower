@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0c10" />
+    <title>Watchtower</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/overrides.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Watchtower home"><span class="brand-mark">W</span><span>watchtower</span></a>
+        <div class="top-status"><span class="status-dot"></span><span id="header-status">checking systems</span></div>
+        <div class="top-actions"><span id="clock" class="mono"></span><button class="icon-button" id="refresh" aria-label="Refresh dashboard">↻</button><button class="icon-button" id="menu" aria-label="Open menu">☰</button></div>
+      </header>
+
+      <section class="hero panel">
+        <div>
+          <p class="eyebrow">PRIVATE HOMELAB · <span id="server-address">TAILNET</span></p>
+          <h1>Good <span id="greeting">evening</span>, Tan.</h1>
+          <p class="hero-copy">Everything is running in one calm place. Here’s the state of your home server.</p>
+        </div>
+        <div class="hero-health">
+          <div class="orb"><span id="online-count">—</span><small>ONLINE</small></div>
+          <div><strong id="health-title">Checking services</strong><p id="health-subtitle">Connecting to your local stack…</p></div>
+        </div>
+      </section>
+
+      <section class="overview-grid">
+        <article class="panel capacity-card">
+          <div class="card-heading"><div><p class="eyebrow">SERVER CAPACITY</p><h2>Storage array</h2></div><span class="badge cyan">DEMO</span></div>
+          <div class="capacity-main"><strong>13.65 <small>TB</small></strong><span>of 35.09 TB used</span><b>58%</b></div>
+          <div class="segmented-meter" aria-label="58 percent storage used" style="--filled: 18"></div>
+          <div class="capacity-footer"><span>MEDIA <b>8.4 TB</b></span><span>BACKUPS <b>3.2 TB</b></span><span>FREE <b>14.4 TB</b></span></div>
+        </article>
+
+        <article class="panel system-card">
+          <div class="card-heading"><div><p class="eyebrow">SYSTEM PULSE · SAMPLE</p><h2>Host performance</h2></div><a id="beszel-link" class="mini-link" href="#">Open Beszel ↗</a></div>
+          <div class="system-readings">
+            <div><span>CPU LOAD</span><strong>24<small>%</small></strong><i class="up">+ 2.1%</i></div>
+            <div><span>MEMORY</span><strong>8.2<small>GB</small></strong><i>of 32 GB</i></div>
+            <div><span>NETWORK</span><strong>38<small>Mb/s</small></strong><i class="up">↓ 12 · ↑ 4</i></div>
+          </div>
+          <div class="line-chart" aria-label="Sample system load chart"><svg viewBox="0 0 600 95" preserveAspectRatio="none"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#63e7dc" stop-opacity=".32"/><stop offset="1" stop-color="#63e7dc" stop-opacity="0"/></linearGradient></defs><path class="grid" d="M0 18H600M0 50H600M0 82H600"/><path class="area" d="M0 79 L35 72 L70 77 L105 55 L140 66 L175 46 L210 53 L245 32 L280 43 L315 35 L350 58 L385 45 L420 64 L455 36 L490 45 L525 28 L560 35 L600 15 V95 H0Z"/><path class="line" d="M0 79 L35 72 L70 77 L105 55 L140 66 L175 46 L210 53 L245 32 L280 43 L315 35 L350 58 L385 45 L420 64 L455 36 L490 45 L525 28 L560 35 L600 15"/></svg></div>
+          <p class="card-note">Sample data — connect Beszel for live host metrics.</p>
+        </article>
+      </section>
+
+      <section class="section-heading"><div><p class="eyebrow">YOUR STACK</p><h2>Services <span id="service-count">—</span></h2></div><div class="legend"><i class="online-dot"></i> Online <i class="offline-dot"></i> Needs attention</div></section>
+      <section id="services" class="services-grid" aria-live="polite"></section>
+
+      <section class="content-grid">
+        <article class="panel media-card">
+          <div class="card-heading"><div><p class="eyebrow">FRESH FROM YOUTUBE</p><h2>Creator feed</h2></div><span class="feed-tag">RSS</span></div>
+          <div id="videos" class="video-list"><div class="feed-loading">Loading latest uploads…</div></div>
+        </article>
+        <article class="panel quote-card">
+          <div class="quote-flare"></div><p class="eyebrow">DAILY SIGNAL</p><blockquote id="quote">“A good system is invisible until you need it.”</blockquote><cite id="quote-author">— Watchtower</cite><div class="quote-bottom"><span>Today’s thought</span><span class="mono" id="quote-date"></span></div>
+        </article>
+      </section>
+
+      <section class="content-grid bottom-grid">
+        <article class="panel home-card">
+          <div class="card-heading"><div><p class="eyebrow">HOME ASSISTANT</p><h2>Quick controls</h2></div><a id="ha-link" class="mini-link" href="#">Open app ↗</a></div>
+          <div class="home-controls"><button class="control active"><span class="control-icon lamp">☀</span><span>Office lights</span><b>ON</b></button><button class="control"><span class="control-icon">◒</span><span>Living room</span><b>OFF</b></button><button class="control"><span class="control-icon violet-bg">◌</span><span>Movie time</span><b>SCENE</b></button><button class="control"><span class="control-icon orange-bg">⌂</span><span>Good night</span><b>SCENE</b></button></div>
+          <p class="card-note">Connect your Home Assistant allowlist to enable real controls.</p>
+        </article>
+        <article class="panel reddit-card">
+          <div class="card-heading"><div><p class="eyebrow">FROM YOUR SUBS</p><h2>Reddit pulse</h2></div><span class="feed-tag warm">HOT</span></div>
+          <div id="reddit" class="reddit-list"><div class="feed-loading">Loading your communities…</div></div>
+        </article>
+      </section>
+    </main>
+    <footer><span>WATCHTOWER / LOCAL ONLY</span><span id="last-updated">Waiting for first update</span></footer>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
