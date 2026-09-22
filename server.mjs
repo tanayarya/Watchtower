@@ -107,7 +107,12 @@ async function homeAssistantRequest(path, options = {}) {
     },
     signal: AbortSignal.timeout(7000)
   });
-  if (!response.ok) throw new Error(`Home Assistant ${response.status}`);
+  if (!response.ok) {
+    const error = new Error(`Home Assistant ${response.status}`);
+    error.remoteStatus = response.status;
+    error.endpoint = path;
+    throw error;
+  }
   return response.json();
 }
 
@@ -115,17 +120,27 @@ async function homeAssistantEntities() {
   const config = await dashboardConfig();
   const entities = config.homeAssistant?.entities ?? [];
   const results = await Promise.all(entities.map(async (entity) => {
-    const state = await homeAssistantRequest(`/api/states/${encodeURIComponent(entity.id)}`);
-    return {
-      id: entity.id,
-      name: entity.name ?? state.attributes?.friendly_name ?? entity.id,
-      icon: entity.icon ?? (entity.id.startsWith('light.') ? 'bulb' : 'plug'),
-      domain: entity.id.split('.')[0],
-      state: state.state,
-      isOn: state.state === 'on',
-      detail: state.attributes?.brightness != null ? `${Math.round((state.attributes.brightness / 255) * 100)}%` : state.state
-    };
+    try {
+      const state = await homeAssistantRequest(`/api/states/${encodeURIComponent(entity.id)}`);
+      return {
+        id: entity.id,
+        name: entity.name ?? state.attributes?.friendly_name ?? entity.id,
+        icon: entity.icon ?? (entity.id.startsWith('light.') ? 'bulb' : 'plug'),
+        domain: entity.id.split('.')[0],
+        state: state.state,
+        isOn: state.state === 'on',
+        detail: state.attributes?.brightness != null ? `${Math.round((state.attributes.brightness / 255) * 100)}%` : state.state
+      };
+    } catch (error) {
+      return { id: entity.id, name: entity.name ?? entity.id, icon: entity.icon ?? 'plug', unavailable: true, errorStatus: error.remoteStatus ?? 503 };
+    }
   }));
+  const authFailure = results.length > 0 && results.every((entity) => entity.errorStatus === 401);
+  if (authFailure) {
+    const error = new Error('Home Assistant rejected the token');
+    error.remoteStatus = 401;
+    throw error;
+  }
   return { connected: true, entities: results };
 }
 
@@ -166,8 +181,10 @@ createServer(async (req, res) => {
     return respond(res, 200, file, contentTypes[extname(filePath)] ?? 'application/octet-stream');
   } catch (error) {
     const missingSecret = error.code === 'ENOENT' && url.pathname.startsWith('/api/home-assistant');
-    const code = missingSecret ? 503 : error.code === 'ENOENT' ? 404 : 500;
-    const message = missingSecret ? 'Home Assistant token is not mounted' : code === 404 ? 'Not found' : 'Dashboard request failed';
-    return respond(res, code, JSON.stringify({ error: message }));
+    const isHomeAssistant = url.pathname.startsWith('/api/home-assistant');
+    const code = missingSecret ? 503 : isHomeAssistant ? (error.remoteStatus === 401 ? 401 : 503) : error.code === 'ENOENT' ? 404 : 500;
+    const message = missingSecret ? 'Home Assistant token is not mounted' : error.remoteStatus === 401 ? 'Home Assistant rejected the token' : isHomeAssistant ? 'Home Assistant is unreachable or an entity is unavailable' : code === 404 ? 'Not found' : 'Dashboard request failed';
+    if (isHomeAssistant) console.error(`[home-assistant] ${message}${error.endpoint ? ` (${error.endpoint})` : ''}`);
+    return respond(res, code, JSON.stringify({ error: message, status: error.remoteStatus ?? code }));
   }
 }).listen(port, '0.0.0.0', () => console.log(`Watchtower running on http://0.0.0.0:${port}`));

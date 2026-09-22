@@ -48,8 +48,8 @@ function renderHomeAssistant(data) {
     note.textContent = 'Mount the local token file, then refresh this dashboard.';
     return;
   }
-  target.innerHTML = data.entities.map((entity) => `<button class="control ${entity.isOn ? 'active' : ''}" data-entity="${escapeHtml(entity.id)}" aria-label="Toggle ${escapeHtml(entity.name)}">
-    <span class="control-icon">${icon(entity.icon)}</span><span>${escapeHtml(entity.name)}</span><b>${entity.isOn ? 'ON' : 'OFF'}</b>
+  target.innerHTML = data.entities.map((entity) => `<button class="control ${entity.isOn ? 'active' : ''}" data-entity="${escapeHtml(entity.id)}" aria-label="Toggle ${escapeHtml(entity.name)}" ${entity.unavailable ? 'disabled' : ''}>
+    <span class="control-icon">${icon(entity.icon)}</span><span>${escapeHtml(entity.name)}</span><b>${entity.unavailable ? 'N/A' : entity.isOn ? 'ON' : 'OFF'}</b>
   </button>`).join('');
   note.textContent = 'Live Home Assistant states · only configured devices can be controlled.';
 }
